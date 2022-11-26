@@ -2,6 +2,7 @@ package dbops
 
 import (
 	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -10,8 +11,7 @@ var (
 )
 
 func init() {
-	dbConn, err = sql.Open("mysql", "root@tcp(localhost:3306)/video_server?charset=utf8")
-	//dbConn, err = sql.Open("mysql", "root@(127.0.0.1:3306)/video_server?parseTime=true")
+	dbConn, err = sql.Open("mysql", "root:12345678@(localhost:3306)/videoserver?parseTime=true")
 	if err != nil {
 		panic(err.Error())
 	}

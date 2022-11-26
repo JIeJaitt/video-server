@@ -5,13 +5,20 @@ import (
 	"log"
 )
 
-func AddUserCredential(loginName string, pwd string) error {
-	stmtIns, err := dbConn.Prepare("INSERT INTO users (login_name,pwd) VALUES (?, ?)")
+func AddUserCredential(id int, loginName string, pwd string) error {
+	stmtIns, err := dbConn.Prepare("INSERT INTO users (id,login_name, pwd) VALUES (?,?,?)")
 	if err != nil {
 		return err
 	}
-	stmtIns.Exec(loginName, pwd)
-	stmtIns.Close()
+	_, err = stmtIns.Exec(id, loginName, pwd)
+	if err != nil {
+		return err
+	}
+	err = stmtIns.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -23,19 +30,34 @@ func GetUserCredential(loginName string) (string, error) {
 	}
 
 	var pwd string
-	stmtOut.QueryRow(loginName).Scan(&pwd)
-	stmtOut.Close()
+	err = stmtOut.QueryRow(loginName).Scan(&pwd)
+	if err != nil {
+		log.Printf("%s", err)
+		return "", err
+	}
+
+	err = stmtOut.Close()
+	if err != nil {
+		log.Printf("%s", err)
+		return "", err
+	}
 	return pwd, nil
 }
 
 func DeleteUser(loginName string, pwd string) error {
-	stmtDel, err := dbConn.Prepare("DELETE REOM users WHERE login_name= ? AND pwd= ?")
+	stmtDel, err := dbConn.Prepare("DELETE FROM users WHERE login_name= ? AND pwd= ?")
 	if err != nil {
 		log.Printf("DeleteUser error: %s", err)
 		return err
 	}
 
-	stmtDel.Exec(loginName, pwd)
-	stmtDel.Close()
+	_, err = stmtDel.Exec(loginName, pwd)
+	if err != nil {
+		return err
+	}
+	err = stmtDel.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
