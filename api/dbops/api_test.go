@@ -2,6 +2,8 @@ package dbops
 
 import "testing"
 
+var tempvid string
+
 func clearTables() {
 	_, err := dbConn.Exec("DELIMITER users")
 	if err != nil {
@@ -57,14 +59,48 @@ func testDeleteUser(t *testing.T) {
 
 func testRegetUser(t *testing.T) {
 	pwd, err := GetUserCredential("Yukino")
-	// 如果没删除用户Yukino成功返回的就是 pwd 和 nil
-	// 那么测试通过就是返回了 "" 和 err
-	// 也就是 err==nil 就是没成功删除，此时应该暂停 testRegetUser 函数
-	// 或者 pwd != "" （因为没删除密码是会返回的）就代表删除成功，否则也应该暂停 testRegetUser 函数
-	if err == nil {
+	if err != nil {
 		t.Errorf("Error of RegetUser: %v", err)
 	}
 	if pwd != "" {
 		t.Errorf("Deleting user test failed")
+	}
+}
+
+func TestVideoWorkFlow(t *testing.T) {
+	clearTables()
+	t.Run("PrepareUser", testAddUser)
+	t.Run("AddVideo", testAddVideoInfo)
+	t.Run("GetVideo", testGetVideoInfo)
+	t.Run("DelVideo", testDeleteVideoInfo)
+	t.Run("RegetVideo", testRegetVideoInfo)
+}
+
+func testAddVideoInfo(t *testing.T) {
+	vi, err := AddNewVideo(1, "my-video")
+	if err != nil {
+		t.Errorf("Error of AddVideoInfo: %v", err)
+	}
+	tempvid = vi.Id
+}
+
+func testGetVideoInfo(t *testing.T) {
+	_, err := GetVideoInfo(tempvid)
+	if err != nil {
+		t.Errorf("Error of GetVideoInfo: %v", err)
+	}
+}
+
+func testDeleteVideoInfo(t *testing.T) {
+	err := DeleteVideoInfo(tempvid)
+	if err != nil {
+		t.Errorf("Error of DeleteVideoInfo: %v", err)
+	}
+}
+
+func testRegetVideoInfo(t *testing.T) {
+	vi, err := GetVideoInfo(tempvid)
+	if err != nil || vi != nil {
+		t.Errorf("Error of RegetVideoInfo: %v", err)
 	}
 }
